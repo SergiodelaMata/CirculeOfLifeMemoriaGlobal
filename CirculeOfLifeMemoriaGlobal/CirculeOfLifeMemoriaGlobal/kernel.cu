@@ -23,7 +23,7 @@ __global__ void make_rand(int seed, char* m, int size) {
         m[num] = 'X';
     }
 }
-
+//Se da el valor inicial de las distintas casillas de la matriz
 __global__ void prepare_matrix(char* p)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -34,35 +34,35 @@ __global__ void prepare_matrix(char* p)
 __global__ void matrix_operation(char* m, char* p, int width, int size) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int counter = 0; 
-    if ((idx % width != 0) && (idx - width >= 0) && (m[idx - width - 1] == 'X')) //Esquina superior izquierda
+    if ((idx % width != 0) && (idx - width >= 0) && (m[idx - width - 1] == 'X')) // Estudia si existe esquina superior izquierda y si tiene una célula viva
     {
         counter++;
     }
-    if ((idx % width != 0) && (m[idx - 1] == 'X')) //Lateral izquierdo
+    if ((idx % width != 0) && (m[idx - 1] == 'X')) //Estudia si existe el casilla en el lateral izquierdo y si tiene una célula viva
     {
         counter++;
     }
-    if ((idx - width >= 0) && (m[idx - width] == 'X')) //Lateral superior
+    if ((idx - width >= 0) && (m[idx - width] == 'X')) //Estudia si existe el casilla en el lateral superior y si tiene una célula viva
     {
         counter++;
     }
-    if ((idx % width != width-1) && (idx - width >= 0) && (m[idx - width + 1] == 'X')) //Esquina superior derecha
+    if ((idx % width != width-1) && (idx - width >= 0) && (m[idx - width + 1] == 'X')) // Estudia si existe esquina superior derecha y si tiene una célula viva
     {
         counter++;
     }
-    if ((idx % width != width - 1) && (m[idx + 1] == 'X')) //Lateral izquierdo
+    if ((idx % width != width - 1) && (m[idx + 1] == 'X')) //Estudia si existe el casilla en el lateral derecho y si tiene una célula viva
     {
         counter++;
     }
-    if ((idx % width != 0) && (idx + width < size) && (m[idx + width - 1] == 'X')) //Esquina inferior izquierda
+    if ((idx % width != 0) && (idx + width < size) && (m[idx + width - 1] == 'X')) // Estudia si existe esquina inferior izquierda y si tiene una célula viva
     {
         counter++;
     }
-    if ((idx + width < size) && (m[idx + width] == 'X')) //Lateral inferior
+    if ((idx + width < size) && (m[idx + width] == 'X')) //Estudia si existe el casilla en el lateral inferior y si tiene una célula viva
     {
         counter++;
     }
-    if ((idx % width != width - 1) && (idx + width < size) && (m[idx + width + 1] == 'X')) //Esquina inferior derecha
+    if ((idx % width != width - 1) && (idx + width < size) && (m[idx + width + 1] == 'X')) // Estudia si existe esquina inferior derecha y si tiene una célula viva
     {
         counter++;
     }
@@ -184,21 +184,23 @@ int main(int argc, char* argv[])
 }
 
 void generate_matrix(char* m, int size, int nBlocks, int nThreads)
+// Genera la matriz con su estado inicial
 {
     srand(time(NULL));
     int seed = rand() % 50000;
     char* m_d;
-    int numElem = generate_random(1, size*0.15);
+    int numElem = generate_random(1, size*0.15);// Genera un número aleatorio de máxima número de células vivas en la etapa inicial siendo el máximo un 15% del máximo número de casillas
     cudaMalloc((void**)&m_d, size * sizeof(char));
     cudaMemcpy(m_d, m, size * sizeof(char), cudaMemcpyHostToDevice);
-    prepare_matrix <<<nBlocks, nThreads >>> (m_d);
-    make_rand <<<nBlocks, numElem >>> (seed, m_d, size);
+    prepare_matrix <<<nBlocks, nThreads >>> (m_d);//Prepara la matriz con todas las casillas con células muertas
+    make_rand <<<nBlocks, numElem >>> (seed, m_d, size);// Va colocando de forma aleatoria células vivas en las casillas de la matriz
     cudaDeviceSynchronize();
     cudaMemcpy(m, m_d, size * sizeof(char), cudaMemcpyDeviceToHost);
     cudaFree(m_d);
 }
 
 void step_life(char* m, char* p, int width, int size, int nBlocks, int nThreads)
+// Genera la matriz resultado a partir de una matriz inicial con las restricciones marcadas para cada casilla
 {
     char* m_d;
     char* p_d;
@@ -206,7 +208,7 @@ void step_life(char* m, char* p, int width, int size, int nBlocks, int nThreads)
     cudaMalloc((void**)&p_d, size * sizeof(char));
     cudaMemcpy(m_d, m, size * sizeof(char), cudaMemcpyHostToDevice);
     cudaMemcpy(p_d, p, size * sizeof(char), cudaMemcpyHostToDevice);
-    matrix_operation <<<nBlocks, nThreads >>> (m_d, p_d, width, size);
+    matrix_operation <<<nBlocks, nThreads >>> (m_d, p_d, width, size);// Estudia el cambio o no de valor de las distintas casillas de la matriz 
     cudaDeviceSynchronize();
     cudaMemcpy(m, m_d, size * sizeof(char), cudaMemcpyDeviceToHost);
     cudaMemcpy(p, p_d, size * sizeof(char), cudaMemcpyDeviceToHost);
@@ -214,14 +216,14 @@ void step_life(char* m, char* p, int width, int size, int nBlocks, int nThreads)
     cudaFree(p_d);
 }
 
-int generate_random(int min, int max)
+int generate_random(int min, int max)// Genera un número aleatorio entre un mínimo y un máximo
 {
     srand(time(NULL));
     int randNumber = rand() % (max - min) + min;
     return randNumber;
 }
 
-void show_info_gpu_card()
+void show_info_gpu_card()// Muestra las características de la tarjeta gráfica usada
 {
     cudaDeviceProp prop;
 
