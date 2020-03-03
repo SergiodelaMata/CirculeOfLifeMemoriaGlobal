@@ -84,10 +84,10 @@ __global__ void matrix_operation(char* m, char* p, int width, int size) {
 void generate_matrix(char* m, int size, int nBlocks, int nThreads);
 int generate_random(int min, int max);
 void step_life(char* m, char* p, int width, int size, int nBlocks, int nThreads);
-void show_info_gpu_card();
+int show_info_gpu_card();
 int main(int argc, char* argv[])
 {
-    show_info_gpu_card();
+    int maxThreads = show_info_gpu_card(); // Muestra la información de la tarjeta gráfica y devuelve el número máximo de hilos que se pueden ejecutar por bloque
     printf("Comienza el juego de la vida:\n");
     int number_blocks = 1;
     int number_rows = 32;
@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
     }
     int size = number_rows * number_columns;
     int width = number_columns;
-    if (size <= 1024)
+    if (size <= maxThreads)
     {
         int counter = 1;
         char* a = (char*)malloc(size * sizeof(char));
@@ -223,7 +223,7 @@ int generate_random(int min, int max)// Genera un número aleatorio entre un míni
     return randNumber;
 }
 
-void show_info_gpu_card()// Muestra las características de la tarjeta gráfica usada
+int show_info_gpu_card()// Muestra las características de la tarjeta gráfica usada
 {
     cudaDeviceProp prop;
 
@@ -263,7 +263,6 @@ void show_info_gpu_card()// Muestra las características de la tarjeta gráfica us
         printf("Memoria global total: %zu GB.\n", prop.totalGlobalMem / (1024 * 1024 * 1024));
         printf("Memoria constante total: %zu Bytes.\n", prop.totalConstMem);
         printf("Memoria compartida por bloque: %zu Bytes.\n", prop.sharedMemPerBlock);
-        printf("Ancho del bus de memoria global: &d.\n", prop.memoryBusWidth);
         printf("Numero registros compartidos por bloque: %d.\n", prop.regsPerBlock);
         printf("Numero hilos maximos por bloque: %d.\n", prop.maxThreadsPerBlock);
         printf("Memoria compartida por multiprocesador: %zu Bytes.\n", prop.sharedMemPerMultiprocessor);
@@ -278,4 +277,5 @@ void show_info_gpu_card()// Muestra las características de la tarjeta gráfica us
 
     }
     getchar();
+    return prop.maxThreadsPerBlock;
 }
