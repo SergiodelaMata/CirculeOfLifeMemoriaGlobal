@@ -84,10 +84,12 @@ __global__ void matrix_operation(char* m, char* p, int width, int size) {
 void generate_matrix(char* m, int size, int nBlocks, int nThreads);
 int generate_random(int min, int max);
 void step_life(char* m, char* p, int width, int size, int nBlocks, int nThreads);
-int show_info_gpu_card();
+void show_info_gpu_card();
+int get_max_number_threads_block();
 int main(int argc, char* argv[])
 {
-    int maxThreads = show_info_gpu_card(); // Muestra la información de la tarjeta gráfica y devuelve el número máximo de hilos que se pueden ejecutar por bloque
+    show_info_gpu_card(); // Muestra la información de la tarjeta gráfica
+    int maxThreads = get_max_number_threads_block(); // Devuelve el número máximo de hilos que se pueden ejecutar por bloque
     printf("Comienza el juego de la vida:\n");
     int number_blocks = 1;
     int number_rows = 32;
@@ -223,7 +225,19 @@ int generate_random(int min, int max)// Genera un número aleatorio entre un míni
     return randNumber;
 }
 
-int show_info_gpu_card()// Muestra las características de la tarjeta gráfica usada
+int get_max_number_threads_block()// Devuelve el número máximo de hilos que se pueden ejecutar por bloque
+{
+    cudaDeviceProp prop;
+
+    int count;
+    //Obtención número de dispositivos compatibles con CUDA
+    HANDLE_ERROR(cudaGetDeviceCount(&count));
+    return prop.maxThreadsPerBlock;
+
+}
+
+
+void show_info_gpu_card()// Muestra las características de la tarjeta gráfica usada
 {
     cudaDeviceProp prop;
 
@@ -277,5 +291,4 @@ int show_info_gpu_card()// Muestra las características de la tarjeta gráfica usa
 
     }
     getchar();
-    return prop.maxThreadsPerBlock;
 }
