@@ -91,20 +91,21 @@ int main(int argc, char* argv[])
     show_info_gpu_card(); // Muestra la información de la tarjeta gráfica
     int maxThreads = get_max_number_threads_block(); // Devuelve el número máximo de hilos que se pueden ejecutar por bloque
     printf("Comienza el juego de la vida:\n");
-    int number_blocks = 1;
-    int number_rows = 32;
-    int number_columns = 32;
-    char execution_mode = 'a';
-    if (argc == 2)
+    int number_blocks = 1; //Número de bloques
+    int number_rows = 32; // Número de elementos por fila
+    int number_columns = 32; // Número de elementos por columna
+    char execution_mode = 'a'; // Modo de ejecución del programa
+    // Condiciones para los casos en los que se está pasando por terminal una serie de parámetros
+    if (argc == 2)//Consideración si solo se pasan dos parámetros por consola
     {
         execution_mode = argv[1][0];
     }
-    else if (argc == 3)
+    else if (argc == 3)//Consideración si solo se pasan tres parámetros por consola
     {
         execution_mode = argv[1][0];
         number_rows = atoi(argv[2]);
     }
-    else if (argc >= 4)
+    else if (argc >= 4)//Consideración si solo se pasan cuatro o más parámetros por consola
     {
         execution_mode = argv[1][0];
         number_rows = atoi(argv[2]);
@@ -131,7 +132,7 @@ int main(int argc, char* argv[])
                 printf("%c ", a[i]);
             }
         }
-        while (true)
+        while (execution_mode == 'm' || execution_mode == 'a')
         {
             if (counter % 2 == 1)
             {
@@ -171,6 +172,10 @@ int main(int argc, char* argv[])
                 getchar();
             }
         }
+        if (execution_mode != 'm' && execution_mode != 'a')
+        {
+            printf("El modo de ejecucion del programa es incorrecto.\n");
+        }
 
         free(a);
         free(b);
@@ -178,7 +183,7 @@ int main(int argc, char* argv[])
     }
     else 
     {
-        printf("Las dimensiones de la matriz introducidas no son válidas.\n");
+        printf("Las dimensiones de la matriz introducidas no son validas.\n");
     }
     getchar();
     getchar();
