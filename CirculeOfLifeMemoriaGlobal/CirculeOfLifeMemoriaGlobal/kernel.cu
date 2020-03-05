@@ -32,8 +32,8 @@ __global__ void prepare_matrix(char* p)
 
 //Se genera una matriz de manera que los elementos bajan una fila
 __global__ void matrix_operation(char* m, char* p, int width, int size) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    int counter = 0; 
+    int idx = blockIdx.x * blockDim.x + threadIdx.x; // Id del hilo según su bloque y su posición en el mismo e índice de la posición trabaja de las distintas matrices
+    int counter = 0; // Contador del número de posiciones con células vivas
     if ((idx % width != 0) && (idx - width >= 0) && (m[idx - width - 1] == 'X')) // Estudia si existe esquina superior izquierda y si tiene una célula viva
     {
         counter++;
@@ -112,11 +112,12 @@ int main(int argc, char* argv[])
         number_columns = atoi(argv[3]);
         
     }
-    int size = number_rows * number_columns;
-    int width = number_columns;
+    int size = number_rows * number_columns; //Tamaño de la matriz
+    int width = number_columns; //Ancho del bloque
     if (size <= maxThreads)
+        // Si el tamaño de la matriz es inferior o igual al máximo número de hilos por bloque que admite la GPU 
     {
-        int counter = 1;
+        int counter = 1;//Contador de número de paso de matriz del juego
         char* a = (char*)malloc(size * sizeof(char));
         char* b = (char*)malloc(size * sizeof(char));
         generate_matrix(a, size, number_blocks, size);
@@ -172,7 +173,7 @@ int main(int argc, char* argv[])
                 getchar();
             }
         }
-        if (execution_mode != 'm' && execution_mode != 'a')
+        if (execution_mode != 'm' && execution_mode != 'a')//Si el modo ejecución es distinto a los propuestos parar el programa
         {
             printf("El modo de ejecucion del programa es incorrecto.\n");
         }
@@ -181,7 +182,7 @@ int main(int argc, char* argv[])
         free(b);
 
     }
-    else 
+    else // Si el tamaño de la matriz es mayor al máximo número de hilos por bloque que admite la GPU 
     {
         printf("Las dimensiones de la matriz introducidas no son validas.\n");
     }
@@ -237,6 +238,7 @@ int get_max_number_threads_block()// Devuelve el número máximo de hilos que se p
     int count;
     //Obtención número de dispositivos compatibles con CUDA
     HANDLE_ERROR(cudaGetDeviceCount(&count));
+    HANDLE_ERROR(cudaGetDeviceProperties(&prop, 0));
     return prop.maxThreadsPerBlock;
 
 }
